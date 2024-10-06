@@ -1,8 +1,5 @@
 import sh
-
-
-# Adding callable to bash -c
-setattr(sh.__class__, "__call__", lambda self, cmd, *args, **kwargs: sh.bash("-c", cmd, *args, **kwargs))
+from sh.contrib import bash
 
 
 def dep(*func_args):
