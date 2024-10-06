@@ -33,8 +33,8 @@ def build_images_local():
 
 
 def push_images_local():
-    sh(fdocker "push {DOCKER_REPO}/{DJANGO_IMAGE}:{VERSION}")
-    sh(fdocker "push {DOCKER_REPO}/{_('POSTGRES_IMAGE')}:{VERSION}")
+    sh.docker(f"push {DOCKER_REPO}/{DJANGO_IMAGE}:{VERSION}")
+    sh.docker(f"push {DOCKER_REPO}/{_('POSTGRES_IMAGE')}:{VERSION}")
 
 
 @dep(build_images_local, push_images_local)
