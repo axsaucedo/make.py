@@ -1,19 +1,32 @@
 # Make.py
 
+Using Makefiles for project command orchestration is becoming more common.
+
+However often writing logic in bash is a pain - make.py allows writing everything in python.
+
+Note: Make.py is not for building CLIs, just a simple way to run orchestration within your project.
+
+## Overview
+
 ```python
 
-# Start project
+# Start project within directory (creates Makefile.py)
 make.py init
 
-# Run first command
+# Run the first command found in your Makefile.py
 make.py
 
 # Run specific command
 make.py <cmd>
 
+# Passes parameters and overrides any set
+make.py <cmd> PARAM=Value
+
 ```
 
-## Example Makefile.py:
+# Example:
+
+### Content in Makefile.py
 
 ```python
 from make import sh, _, bash, dep
@@ -37,4 +50,17 @@ def build_and_push():
     pass
 
 ```
+
+### Run commands
+
+```bash
+
+# Runs build_images_local
+make.py
+
+# Runs build and push cmds
+make.py build_and_push
+
+# Runs build and push and overrides push cmds
+make.py build_and_push IMAGE="myimage"
 
