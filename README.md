@@ -34,18 +34,17 @@ from make import sh, _, bash, dep
 DOCKER_REPO = _('DOCKER_REPO')
 IMAGE = _('IMAGE')
 VERSION = _('VERSION')
-DEV_SUFFIX = _('DEV_SUFFIX')
 
-def build_images_local():
+def build_images():
     bash("docker build -f ./docker/Dockerfile ."
-        f" -t {DOCKER_REPO}/{IMAGE}:{VERSION}-{DEV_SUFFIX}")
+        f" -t {DOCKER_REPO}/{IMAGE}:{VERSION}")
 
 
-def push_images_local():
+def push_images():
     sh.docker(f"push {DOCKER_REPO}/{IMAGE}:{VERSION}")
 
 
-@dep(build_images_local, push_images_local)
+@dep(build_images, push_images)
 def build_and_push():
     pass
 
@@ -55,7 +54,7 @@ def build_and_push():
 
 ```bash
 
-# Runs build_images_local
+# Runs build_images
 make.py
 
 # Runs build and push cmds
@@ -63,4 +62,27 @@ make.py build_and_push
 
 # Runs build and push and overrides push cmds
 make.py build_and_push IMAGE="myimage"
+
+```
+
+### Equivallent makefile
+
+```bash
+
+IMAGE ?= $(IMAGE)
+DOCKER_REPO ?= $(DOCKER_REPO)
+VERSION ?= $(VERSION)
+
+build_images:
+    docker build -f ./docker/Dockerfile . \
+        -t $(DOCKER_REPO)/$(IMAGE):$(VERSION)
+
+
+push_images:
+    docker push $(DOCKER_REPO)/$(IMAGE):$(VERSION)
+
+
+build_and_push: build_images, push_images
+
+```
 
