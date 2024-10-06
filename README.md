@@ -31,9 +31,10 @@ make.py <cmd> PARAM=Value
 ```python
 from make import sh, _, bash, dep
 
+# Read from env
 DOCKER_REPO = _('DOCKER_REPO')
 IMAGE = _('IMAGE')
-VERSION = _('VERSION')
+VERSION = _('VERSION', "0.0.1") # Default value
 
 def build_images():
     bash("docker build -f ./docker/Dockerfile ."

@@ -1,15 +1,14 @@
 from make import sh, bash, _, dep
 
+# Read from env
 DOCKER_REPO = _('DOCKER_REPO')
-DJANGO_IMAGE = _('DJANGO_IMAGE')
-POSTGRES_IMAGE = _('POSTGRES_IMAGE')
-VERSION = _('VERSION')
-DEV_SUFFIX = _('DEV_SUFFIX')
+IMAGE = _('IMAGE')
+VERSION = _('VERSION', "0.0.1") # Default value
 
 
 def build_images():
     bash("docker build -f ./docker/Dockerfile ."
-        f" -t {DOCKER_REPO}/{IMAGE}:{VERSION}-{DEV_SUFFIX}")
+        f" -t {DOCKER_REPO}/{IMAGE}:{VERSION}")
 
 
 def push_images():
