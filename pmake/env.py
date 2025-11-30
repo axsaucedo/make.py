@@ -1,7 +1,8 @@
 """Environment variable handling for Python Makefile (pmake)
 
 This module provides the `_()` function for accessing environment variables
-with optional default values, as used in Makefile.py.
+with optional default values, as used in Makefile.py. It also tracks accessed
+variables for automatic shell environment inheritance.
 """
 
 import os
@@ -26,7 +27,10 @@ def _(name: str, default: Optional[Any] = None) -> str:
     if value is None:
         if default is None:
             raise ValueError(f"Environment variable '{name}' is required but not set")
-        return str(default)
+        # Set the default value in the environment so it's available to shell commands
+        final_value = str(default)
+        os.environ[name] = final_value
+        return final_value
     return value
 
 

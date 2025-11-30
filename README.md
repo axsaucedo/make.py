@@ -37,18 +37,18 @@ IMAGE = _('IMAGE')
 VERSION = _('VERSION', "0.0.1")  # Default value
 
 def build_images():
-    # Option 1: Use sh object (amoffat/sh)
+    # Use sh object - automatically inherits environment including venv
     sh.docker("build", "-f", "./docker/Dockerfile", ".",
               "-t", f"{DOCKER_REPO}/{IMAGE}:{VERSION}")
 
 def push_images():
-    # Option 2: Use direct command imports
+    # Use direct command imports - environment variables from _() automatically available
     docker("push", f"{DOCKER_REPO}/{IMAGE}:{VERSION}")
 
 def status():
-    # Direct command imports work for any command
+    # All commands automatically use your current shell environment
     git("status")
-    echo("Build process completed!")
+    echo(f"Build completed for {IMAGE} v{VERSION}!")
 
 @dep(build_images, push_images)
 def build_and_push():
@@ -122,26 +122,55 @@ git("commit", "-m", "Update")
 echo("Hello World")
 ```
 
-### Powerful Shell Execution
+### Powerful Shell Execution with Automatic Environment Inheritance
 
-pmake uses the amoffat/sh library under the hood, providing:
-- Better error handling
-- Superior command composition
-- Automatic environment variable inheritance
+pmake uses the amoffat/sh library under the hood with enhanced environment management:
+- **Automatic virtual environment inheritance**: Commands use your current venv
+- **Environment variable tracking**: Variables accessed via `_()` are automatically available to shell commands
+- **Parameter override inheritance**: CLI `PARAM=value` overrides are passed to all shell commands
+- Better error handling and superior command composition
 - Rich command objects with piping support
+
+**No more `_env=os.environ` needed!** All pmake shell commands automatically include:
+- Your current shell environment (including PATH, VIRTUAL_ENV, etc.)
+- Any environment variables accessed through `_()` calls
+- Any parameter overrides from the command line
+
+### Automatic Environment Inheritance
+
+All shell commands automatically inherit your environment:
+
+```python
+from pmake import sh, python, pip, _
+
+# Environment variables accessed via _() are tracked
+VENV_PATH = _('VIRTUAL_ENV')
+PROJECT_NAME = _('PROJECT_NAME', 'myproject')
+
+def setup_venv():
+    # python command automatically uses current virtual environment
+    python("-m", "pip", "install", "-e", ".")
+
+    # No need for _env=os.environ - it's automatic!
+    pip("install", "pytest", "black", "mypy")
+
+def test():
+    # All environment variables from _() calls are available
+    python("-c", f"print('Testing {PROJECT_NAME}')")
+```
 
 ### Both Syntaxes Supported
 
 ```python
 from pmake import sh, docker
 
-# Option 1: Direct imports
+# Option 1: Direct imports (automatically inherit environment)
 docker("build", "-t", "myapp", ".")
 
-# Option 2: Through sh object
+# Option 2: Through sh object (automatically inherit environment)
 sh.docker("build", "-t", "myapp", ".")
 
-# Complex shell operations
+# Complex shell operations (with full environment)
 sh.bash("-c", "docker build . | grep 'Successfully built'")
 ```
 

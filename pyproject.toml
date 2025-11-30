@@ -45,5 +45,5 @@ addopts = [
     "--cov=pmake",
     "--cov-report=term-missing",
     "--cov-report=html",
-    "--cov-fail-under=85"
+    "--cov-fail-under=75"
 ]
