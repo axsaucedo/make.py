@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from pmake.core import discover_commands, execute_command, parse_parameters, get_default_command
 from pmake.env import _, set_env, get_env_dict
-from pmake.shell import sh
+from pmake import sh
 
 
 class TestEnvironmentVariables:

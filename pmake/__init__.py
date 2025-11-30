@@ -32,9 +32,10 @@ Usage:
 
     Then run from command line:
     ```bash
-    pmake                    # Run first command
-    pmake build              # Run specific command
+    pmake                    # Run default command
+    pmake build              # Run specific command directly
     pmake deploy IMAGE=myapp # Run with parameter override
+    pmake --help             # Show all commands with descriptions and dependencies
     ```
 """
 

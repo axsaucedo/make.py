@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from pmake.core import discover_commands, execute_command, DependencyError
 from pmake.env import _
-from pmake.shell import sh
+from pmake import sh
 
 
 class TestCircularDependencies:

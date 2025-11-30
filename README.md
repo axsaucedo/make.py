@@ -9,17 +9,18 @@ Note: Python Makefile (pmake) is not for building CLIs, just a simple way to run
 ## Overview
 
 ```bash
-# Start project within directory (creates Makefile.py)
-pmake init
+# Create a Makefile.py in your project directory (see guidance with pmake when no file exists)
 
-# Run the first command found in your Makefile.py
+# Run the default command from your Makefile.py
 pmake
 
-# Run specific command
-pmake <cmd>
+# Run specific command directly
+pmake build_images
+pmake status
+pmake build_and_push
 
-# Passes parameters and overrides any set
-pmake <cmd> PARAM=Value
+# Pass parameters and override environment variables
+pmake build_images IMAGE=myapp VERSION=1.0.0
 ```
 
 # Example:
@@ -57,15 +58,53 @@ def build_and_push():
 ### Run commands
 
 ```bash
-# Runs build_images
+# Runs the default command (first alphabetically: build_and_push in this case)
 pmake
 
-# Runs build and push cmds
+# Run specific commands directly
+pmake build_images
+pmake push_images
+pmake status
+
+# Runs build_and_push (with dependencies: build_images, push_images)
 pmake build_and_push
 
-# Runs build and push with parameter override
-pmake build_and_push IMAGE="myimage"
+# Run with parameter overrides
+pmake build_and_push IMAGE="myimage" VERSION="2.0.0"
+
+# See all available commands with descriptions and dependencies
+pmake --help
 ```
+
+## Getting Started
+
+### Creating Your First Makefile.py
+
+When you run `pmake` in a directory without a Makefile.py, it will show helpful guidance. Here's a simple starter example:
+
+```python
+from pmake import sh, _, dep
+from pmake import echo, python, pip
+
+def hello():
+    '''Say hello - this will be your default command'''
+    echo('Hello from pmake!')
+
+def test():
+    '''Run tests'''
+    python('-m', 'pytest')
+
+@dep(test)
+def deploy():
+    '''Deploy after running tests'''
+    echo('Deploying application...')
+```
+
+Then run:
+- `pmake` - Runs default command (hello in this case)
+- `pmake test` - Runs test command
+- `pmake deploy` - Runs test, then deploy (due to @dep dependency)
+- `pmake --help` - Shows all available commands with descriptions and dependencies
 
 ## Features
 

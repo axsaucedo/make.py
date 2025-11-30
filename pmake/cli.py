@@ -1,14 +1,14 @@
 """CLI interface for Python Makefile (pmake) using Typer
 
-Provides the main entry point for the pmake command line tool.
+Provides direct access to Makefile.py commands without admin subcommands.
+All commands from Makefile.py are registered dynamically at startup.
 """
 
 import sys
-from typing import List, Optional
+from typing import List, Optional, Callable
 
 import typer
 from rich.console import Console
-from rich.table import Table
 
 from .core import (
     discover_commands,
@@ -23,159 +23,115 @@ console = Console()
 app = typer.Typer(
     name="pmake",
     help="Python-based command orchestration using Makefile.py",
-    no_args_is_help=False  # Allow running without args to use default command
+    no_args_is_help=False,  # Allow running without args to use default command
+    rich_markup_mode="rich",
+    add_completion=False
 )
 
 
-@app.command()
-def main(
-    args: List[str] = typer.Argument(
-        default=None,
-        help="Command name and parameters (PARAM=value)"
-    )
-) -> None:
-    """Main entry point for pmake CLI.
+def show_init_guidance() -> None:
+    """Show helpful guidance when no Makefile.py exists."""
+    console.print("[yellow]No Makefile.py found in current directory[/yellow]")
+    console.print("\n[dim]Create a Makefile.py file to get started:[/dim]")
 
-    Examples:
-        pmake                      # Run first command
-        pmake build_images         # Run specific command
-        pmake build IMAGE=myapp    # Run with parameter override
-    """
-    try:
-        # Discover commands from Makefile.py
-        registry = discover_commands()
+    console.print("""
+[bold]Example Makefile.py:[/bold]
+```python
+from pmake import sh, _, dep
+from pmake import echo, python, pip
 
-        if not registry.list_commands():
-            console.print("[red]Error:[/red] No commands found in Makefile.py")
+def hello():
+    '''Say hello - this will be your default command'''
+    echo('Hello from pmake!')
+
+def test():
+    '''Run tests'''
+    python('-m', 'pytest')
+
+@dep(test)
+def deploy():
+    '''Deploy after running tests'''
+    echo('Deploying application...')
+```
+
+[dim]Then run:[/dim]
+  pmake            # Runs default command (hello)
+  pmake test       # Runs test command
+  pmake deploy     # Runs test, then deploy
+  pmake --help     # Shows all available commands
+""")
+
+
+def create_dynamic_command(name: str, func: Callable, registry: CommandRegistry) -> None:
+    """Create a Typer command for a Makefile.py function."""
+    deps = registry.dependencies.get(name, [])
+    help_text = func.__doc__ or f"Run {name} command"
+
+    if deps:
+        help_text += f" [red](depends on: {', '.join(deps)})[/red]"
+
+    @app.command(name=name, help=help_text)
+    def dynamic_command(
+        params: List[str] = typer.Argument(
+            default=None,
+            help="Parameters (PARAM=value)"
+        )
+    ) -> None:
+        try:
+            _, param_dict = parse_parameters(params or [])
+            execute_command(registry, name, param_dict)
+        except DependencyError as e:
+            console.print(f"[red]Dependency Error:[/red] {e}")
+            raise typer.Exit(1)
+        except ValueError as e:
+            console.print(f"[red]Error:[/red] {e}")
+            raise typer.Exit(1)
+        except Exception as e:
+            console.print(f"[red]Execution Error:[/red] {e}")
             raise typer.Exit(1)
 
-        # Parse command and parameters
-        command_name, params = parse_parameters(args or [])
 
-        # Use default command if none specified
-        if command_name is None:
-            command_name = get_default_command(registry)
-            if command_name is None:
-                console.print("[red]Error:[/red] No default command available")
-                raise typer.Exit(1)
-            console.print(f"[dim]Running default command: {command_name}[/dim]")
-
-        # Validate command exists
-        if command_name not in registry.commands:
-            console.print(f"[red]Error:[/red] Command '{command_name}' not found")
-            console.print("\nAvailable commands:")
-            _show_commands(registry)
-            raise typer.Exit(1)
-
-        # Execute the command
-        execute_command(registry, command_name, params)
-
-    except FileNotFoundError:
-        console.print("[red]Error:[/red] Makefile.py not found in current directory")
-        console.print("\n[dim]Create a Makefile.py file with your commands.[/dim]")
-        console.print("[dim]Example:[/dim]")
-        console.print("```python")
-        console.print("from make import bash, _")
-        console.print("")
-        console.print("def hello():")
-        console.print("    bash('echo Hello World')")
-        console.print("```")
-        raise typer.Exit(1)
-
-    except ImportError as e:
-        console.print(f"[red]Error:[/red] Could not import Makefile.py: {e}")
-        raise typer.Exit(1)
-
-    except DependencyError as e:
-        console.print(f"[red]Dependency Error:[/red] {e}")
-        raise typer.Exit(1)
-
-    except ValueError as e:
-        console.print(f"[red]Error:[/red] {e}")
-        raise typer.Exit(1)
-
-    except Exception as e:
-        console.print(f"[red]Execution Error:[/red] {e}")
-        raise typer.Exit(1)
-
-
-@app.command()
-def init() -> None:
-    """Initialize a new Makefile.py in the current directory."""
-    makefile_content = '''from pmake import sh, bash, _, dep
-
-# Read from env
-DOCKER_REPO = _('DOCKER_REPO')
-IMAGE = _('IMAGE')
-VERSION = _('VERSION', "0.0.1")  # Default value
-
-
-def build_images():
-    bash("docker build -f ./docker/Dockerfile ."
-        f" -t {DOCKER_REPO}/{IMAGE}:{VERSION}")
-
-
-def push_images():
-    sh.docker(f"push {DOCKER_REPO}/{IMAGE}:{VERSION}")
-
-
-@dep(build_images, push_images)
-def build_and_push():
-    pass
-'''
-
-    try:
-        with open("Makefile.py", "x") as f:
-            f.write(makefile_content)
-        console.print("[green]✓[/green] Created Makefile.py")
-        console.print("\n[dim]You can now run:[/dim]")
-        console.print("  pmake                    # Run first command")
-        console.print("  pmake build_images       # Run specific command")
-        console.print("  pmake --help             # Show help")
-
-    except FileExistsError:
-        console.print("[yellow]Warning:[/yellow] Makefile.py already exists")
-        raise typer.Exit(1)
-
-
-@app.command()
-def list() -> None:
-    """List available commands from Makefile.py."""
+def register_makefile_commands() -> Optional[CommandRegistry]:
+    """Discover and register all Makefile.py commands as Typer commands."""
     try:
         registry = discover_commands()
-        console.print("\n[bold]Available commands:[/bold]")
-        _show_commands(registry)
 
+        # Register each command dynamically
+        for cmd_name, func in registry.commands.items():
+            create_dynamic_command(cmd_name, func, registry)
+
+        return registry
     except FileNotFoundError:
-        console.print("[red]Error:[/red] Makefile.py not found")
-        console.print("Run '[bold]pmake init[/bold]' to create one.")
-        raise typer.Exit(1)
-
+        return None
     except ImportError as e:
-        console.print(f"[red]Error:[/red] Could not import Makefile.py: {e}")
-        raise typer.Exit(1)
-
-
-def _show_commands(registry: CommandRegistry) -> None:
-    """Display commands in a formatted table."""
-    table = Table(show_header=True, header_style="bold blue")
-    table.add_column("Command")
-    table.add_column("Dependencies")
-
-    for command in sorted(registry.list_commands()):
-        deps = registry.dependencies.get(command, [])
-        deps_str = ", ".join(deps) if deps else "[dim]none[/dim]"
-        table.add_row(command, deps_str)
-
-    console.print(table)
+        console.print(f"[red]Error importing Makefile.py:[/red] {e}")
+        return None
 
 
 def cli_entry_point() -> None:
     """Entry point for the CLI when installed via pip."""
+    # Try to register Makefile.py commands
+    registry = register_makefile_commands()
+
+    if registry is None:
+        # No Makefile.py found or import error - show initialization guidance
+        show_init_guidance()
+        return
+
     # Handle the case where no arguments are provided
     if len(sys.argv) == 1:
-        # Run with default behavior (no args)
-        main([])
+        # Try to run default command
+        default_cmd = get_default_command(registry)
+        if default_cmd:
+            try:
+                console.print(f"[dim]Running default command: {default_cmd}[/dim]")
+                execute_command(registry, default_cmd)
+            except Exception as e:
+                console.print(f"[red]Error executing default command:[/red] {e}")
+                raise typer.Exit(1)
+        else:
+            # No default command - show help
+            app()
     else:
         # Let typer handle the arguments
         app()
