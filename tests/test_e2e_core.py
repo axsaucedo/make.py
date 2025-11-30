@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from pmake.core import discover_commands, execute_command, parse_parameters, get_default_command
 from pmake.env import _, set_env, get_env_dict
-from pmake.shell import bash, sh
+from pmake.shell import sh
 
 
 class TestEnvironmentVariables:
@@ -65,25 +65,26 @@ class TestEnvironmentVariables:
 class TestShellExecution:
     """Test shell command execution"""
 
-    def test_bash_simple_command(self):
-        """Test bash() with simple command"""
+    def test_echo_simple_command(self):
+        """Test echo command using amoffat/sh"""
         # Should not raise exception
-        bash("echo 'test command'")
+        sh.echo("test command")
 
-    def test_bash_with_capture(self):
-        """Test bash() with output capture"""
-        result = bash("echo 'captured output'", capture_output=True)
+    def test_echo_with_capture(self):
+        """Test echo with output capture using amoffat/sh"""
+        result = str(sh.echo("captured output")).strip()
         assert result == 'captured output'
 
-    def test_bash_command_failure(self):
-        """Test bash() with failing command"""
-        with pytest.raises(Exception):  # subprocess.CalledProcessError
-            bash("exit 1")
+    def test_command_failure(self):
+        """Test command with failing exit code using amoffat/sh"""
+        with pytest.raises(Exception):  # amoffat/sh ErrorReturnCode
+            sh.bash("-c", "exit 1")
 
-    def test_bash_command_failure_no_check(self):
-        """Test bash() with failing command but check=False"""
-        # Should not raise exception
-        bash("exit 1", check=False)
+    def test_command_failure_no_check(self):
+        """Test command with failing exit code but ignore errors using amoffat/sh"""
+        # Should not raise exception - use _ok_code to accept exit code 1
+        result = sh.bash("-c", "exit 1", _ok_code=[0, 1])
+        # This should not raise an exception
 
     def test_sh_proxy(self):
         """Test sh proxy functionality"""
@@ -125,7 +126,7 @@ class TestCommandDiscovery:
 
         # Should find all functions from simple_makefile.py
         expected_commands = {
-            'hello', 'version', 'test_bash', 'test_sh_proxy', 'greet', 'info',
+            'hello', 'version', 'test_sh_commands', 'test_sh_proxy', 'greet', 'info',
             'welcome', 'step1', 'step2', 'step3', 'capture_test', 'comprehensive',
             'default_task'
         }
@@ -138,7 +139,7 @@ class TestCommandDiscovery:
 
         # Test specific dependency relationships
         assert registry.dependencies.get('greet', []) == ['hello']
-        assert set(registry.dependencies.get('info', [])) == {'version', 'test_bash'}
+        assert set(registry.dependencies.get('info', [])) == {'version', 'test_sh_commands'}
         assert set(registry.dependencies.get('welcome', [])) == {'hello', 'version'}
         assert registry.dependencies.get('step2', []) == ['step1']
         assert registry.dependencies.get('step3', []) == ['step2']
@@ -154,10 +155,10 @@ class TestCommandDiscovery:
         # Test multiple dependencies
         order = registry.get_execution_order('info')
         assert 'version' in order
-        assert 'test_bash' in order
+        assert 'test_sh_commands' in order
         assert 'info' in order
         assert order.index('info') > order.index('version')
-        assert order.index('info') > order.index('test_bash')
+        assert order.index('info') > order.index('test_sh_commands')
 
     def test_get_default_command(self):
         """Test default command selection"""

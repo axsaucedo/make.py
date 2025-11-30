@@ -3,10 +3,11 @@ name = "pmake"
 version = "0.1.0"
 description = "Python Makefile - Simple command orchestration through Makefile.py"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.8.1"
 dependencies = [
     "typer>=0.9.0",
-    "rich>=13.0.0"
+    "rich>=13.0.0",
+    "sh>=2.0.0"
 ]
 keywords = ["makefile", "automation", "build", "tasks", "cli"]
 classifiers = [

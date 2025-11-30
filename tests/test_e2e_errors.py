@@ -21,7 +21,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from pmake.core import discover_commands, execute_command, DependencyError
 from pmake.env import _
-from pmake.shell import bash, sh
+from pmake.shell import sh
 
 
 class TestCircularDependencies:
@@ -36,37 +36,38 @@ class TestCircularDependencies:
         # Note: The circular_deps.py fixture has intentional syntax issues
         # for testing purposes. We'll create a corrected version for actual testing.
         circular_makefile_content = '''
-from pmake import sh, bash, _, dep
+from pmake import sh, _, dep
+from pmake import echo
 
 # Simple circular dependency: A → B → A
 def task_a():
     """Task A that will depend on B (creating circular dependency)"""
-    bash("echo 'Task A executed'")
+    echo('Task A executed')
 
 def task_b():
     """Task B that will depend on A (creating circular dependency)"""
-    bash("echo 'Task B executed'")
+    echo('Task B executed')
 
 # Create circular dependencies by redefining with @dep
 @dep(task_b)
 def task_a():
     """Task A redefined to depend on B"""
-    bash("echo 'Task A executed (circular)'")
+    echo('Task A executed (circular)')
 
 @dep(task_a)
 def task_b():
     """Task B redefined to depend on A (completing the cycle)"""
-    bash("echo 'Task B executed (circular)'")
+    echo('Task B executed (circular)')
 
 # Valid non-circular tasks for control testing
 def valid_start():
     """Valid task with no dependencies"""
-    bash("echo 'Valid start task'")
+    echo('Valid start task')
 
 @dep(valid_start)
 def valid_end():
     """Valid task with proper dependency"""
-    bash("echo 'Valid end task'")
+    echo('Valid end task')
 '''
         Path("Makefile.py").write_text(circular_makefile_content)
 
@@ -137,7 +138,8 @@ class TestMissingEnvironmentVariables:
 
         # Create makefile with missing environment variables
         error_makefile_content = '''
-from pmake import sh, bash, _, dep
+from pmake import sh, _, dep
+from pmake import echo
 
 # Missing environment variables (no defaults)
 REQUIRED_VAR = _('REQUIRED_VAR_MISSING')  # Will fail if not set
@@ -145,15 +147,15 @@ OPTIONAL_VAR = _('OPTIONAL_VAR', 'default_value')  # Has default
 
 def missing_env_task():
     """Task that uses missing environment variable"""
-    bash(f"echo 'Using required var: {REQUIRED_VAR}'")
+    echo(f'Using required var: {REQUIRED_VAR}')
 
 def has_default_task():
     """Task that uses environment variable with default"""
-    bash(f"echo 'Using optional var: {OPTIONAL_VAR}'")
+    echo(f'Using optional var: {OPTIONAL_VAR}')
 
 def valid_task():
     """Valid task for control testing"""
-    bash("echo 'Valid task executed'")
+    echo('Valid task executed')
 '''
         Path("Makefile.py").write_text(error_makefile_content)
 
@@ -203,37 +205,38 @@ class TestCommandExecutionFailures:
 
         # Create makefile with failing commands
         failing_makefile_content = '''
-from pmake import sh, bash, _, dep
+from pmake import sh, _, dep
+from pmake import echo
 
 def failing_command():
     """Task with command that will fail"""
-    bash("exit 1")  # This command will fail with exit code 1
+    sh.bash("-c", "exit 1")  # This command will fail with exit code 1
 
 def another_failing_command():
     """Task with another type of failure"""
-    bash("false")  # Another way to fail
+    sh.false()  # Another way to fail
 
 def valid_task():
     """Valid task for control testing"""
-    bash("echo 'Valid task executed'")
+    echo('Valid task executed')
 
 @dep(failing_command)
 def depends_on_failure():
     """Task that depends on a failing task"""
-    bash("echo 'This should not execute if dependency fails'")
+    echo('This should not execute if dependency fails')
 
 @dep(valid_task)
 def depends_on_success():
     """Task that depends on a successful task"""
-    bash("echo 'This should execute after valid task'")
+    echo('This should execute after valid task')
 
 def capture_failing_output():
     """Task that tries to capture output from failing command"""
     try:
-        result = bash("exit 1", capture_output=True)
-        bash(f"echo 'Result: {result}'")
+        result = sh.bash("-c", "exit 1", capture_output=True)
+        echo(f'Result: {result}')
     except:
-        bash("echo 'Caught failure in output capture'")
+        echo('Caught failure in output capture')
 
 def sh_proxy_failure():
     """Task using sh proxy that will fail"""
@@ -286,27 +289,28 @@ class TestInvalidDependencyReferences:
 
         # Create makefile with invalid dependency references
         invalid_deps_makefile_content = '''
-from pmake import sh, bash, _, dep
+from pmake import sh, _, dep
+from pmake import echo
 
 def valid_task():
     """Valid task for testing"""
-    bash("echo 'Valid task executed'")
+    echo('Valid task executed')
 
 # This creates an invalid dependency reference
 @dep(nonexistent_task)
 def invalid_dep_task():
     """Task that depends on non-existent function"""
-    bash("echo 'This depends on non-existent task'")
+    echo('This depends on non-existent task')
 
 # Mixed valid and invalid dependencies
 @dep(valid_task)  # This exists
 def mixed_valid_deps():
     """Task with valid dependencies"""
-    bash("echo 'Mixed dependencies task'")
+    echo('Mixed dependencies task')
 
 def standalone_task():
     """Task with no dependencies"""
-    bash("echo 'Standalone task executed'")
+    echo('Standalone task executed')
 '''
         Path("Makefile.py").write_text(invalid_deps_makefile_content)
 
@@ -325,20 +329,21 @@ def standalone_task():
         """Test handling when some dependencies are valid"""
         # Create a version with only valid dependencies
         valid_makefile_content = '''
-from pmake import sh, bash, _, dep
+from pmake import sh, _, dep
+from pmake import echo
 
 def valid_task():
     """Valid task for testing"""
-    bash("echo 'Valid task executed'")
+    echo('Valid task executed')
 
 @dep(valid_task)
 def mixed_valid_deps():
     """Task with valid dependencies"""
-    bash("echo 'Mixed dependencies task'")
+    echo('Mixed dependencies task')
 
 def standalone_task():
     """Task with no dependencies"""
-    bash("echo 'Standalone task executed'")
+    echo('Standalone task executed')
 '''
         Path("Makefile.py").write_text(valid_makefile_content)
 
@@ -370,11 +375,11 @@ class TestImportErrors:
     def test_missing_make_import(self):
         """Test handling when make import is missing"""
         makefile_content = '''
-# Missing: from pmake import sh, bash, _, dep
+# Missing: from pmake import sh, _, dep, echo
 
 def task_without_imports():
     """Task that tries to use undefined functions"""
-    bash("echo 'This will fail'")
+    echo('This will fail')
 '''
         Path("Makefile.py").write_text(makefile_content)
 
@@ -389,10 +394,10 @@ def task_without_imports():
         """Test handling when Makefile.py imports non-existent modules"""
         makefile_content = '''
 from nonexistent_module import something
-from pmake import bash
+from pmake import echo
 
 def test_task():
-    bash("echo 'test'")
+    echo('test')
 '''
         Path("Makefile.py").write_text(makefile_content)
 
@@ -402,10 +407,10 @@ def test_task():
     def test_syntax_error_in_makefile(self):
         """Test handling when Makefile.py has syntax errors"""
         makefile_content = '''
-from pmake import bash
+from pmake import echo
 
 def invalid_syntax():
-    bash("echo 'unclosed quote)
+    echo('unclosed quote)
 '''
         Path("Makefile.py").write_text(makefile_content)
 
@@ -417,12 +422,13 @@ def invalid_syntax():
         makefile_content = '''
 import os
 from pathlib import Path
-from pmake import sh, bash, _, dep
+from pmake import sh, _, dep
+from pmake import echo
 
 def test_imports():
     """Task using various imports"""
-    bash("echo 'Testing imports'")
-    bash(f"echo 'Current directory: {os.getcwd()}'")
+    echo('Testing imports')
+    echo(f'Current directory: {os.getcwd()}')
 '''
         Path("Makefile.py").write_text(makefile_content)
 
@@ -471,19 +477,19 @@ VARIABLE2 = "value2"
     def test_makefile_with_private_functions(self):
         """Test that private functions (starting with _) are not discovered"""
         makefile_content = '''
-from pmake import bash
+from pmake import echo
 
 def public_function():
     """Public function"""
-    bash("echo 'public'")
+    echo('public')
 
 def _private_function():
     """Private function"""
-    bash("echo 'private'")
+    echo('private')
 
 def __dunder_function__():
     """Dunder function"""
-    bash("echo 'dunder'")
+    echo('dunder')
 '''
         Path("Makefile.py").write_text(makefile_content)
 
@@ -497,14 +503,14 @@ def __dunder_function__():
     def test_makefile_with_classes(self):
         """Test that classes are not treated as commands"""
         makefile_content = '''
-from pmake import bash
+from pmake import echo
 
 class TestClass:
     def method(self):
         pass
 
 def function():
-    bash("echo 'function'")
+    echo('function')
 '''
         Path("Makefile.py").write_text(makefile_content)
 
@@ -519,17 +525,17 @@ def function():
         # Create a long chain of dependencies
         chain_length = 20
         makefile_content = '''
-from pmake import bash, dep
+from pmake import echo, dep
 
 def task_0():
-    bash("echo 'Task 0'")
+    echo('Task 0')
 
 '''
         for i in range(1, chain_length):
             makefile_content += f'''
 @dep(task_{i-1})
 def task_{i}():
-    bash(f"echo 'Task {i}'")
+    echo(f'Task {i}')
 
 '''
 
