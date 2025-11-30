@@ -1,4 +1,4 @@
-"""Environment variable handling for Make.py
+"""Environment variable handling for Python Makefile (pmake)
 
 This module provides the `_()` function for accessing environment variables
 with optional default values, as used in Makefile.py.

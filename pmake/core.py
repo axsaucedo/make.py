@@ -1,4 +1,4 @@
-"""Core functionality for Make.py
+"""Core functionality for Python Makefile (pmake)
 
 This module provides command discovery, @dep decorator, and execution orchestration
 for function-based commands (Option 1).
@@ -193,6 +193,6 @@ def parse_parameters(args: List[str]) -> tuple[Optional[str], Dict[str, str]]:
 
 
 def get_default_command(registry: CommandRegistry) -> Optional[str]:
-    """Get the first command as default (matching make.py behavior)."""
+    """Get the first command as default (matching pmake behavior)."""
     commands = registry.list_commands()
     return commands[0] if commands else None

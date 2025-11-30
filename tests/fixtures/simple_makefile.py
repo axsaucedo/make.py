@@ -7,7 +7,7 @@ This makefile contains straightforward tasks to test core functionality:
 - Parameter override testing
 """
 
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Environment variables for testing
 APP_NAME = _('APP_NAME', 'myapp')

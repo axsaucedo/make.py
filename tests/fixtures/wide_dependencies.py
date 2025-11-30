@@ -9,7 +9,7 @@ Dependency patterns:
 - Independent chains: chain1_start → chain1_end, chain2_start → chain2_end
 """
 
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Environment variables
 WORKERS = _('WORKERS', '4')

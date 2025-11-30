@@ -1,26 +1,26 @@
-# Make.py
+# Python Makefile (pmake)
 
 Using Makefiles for project command orchestration is becoming more common.
 
-However often writing logic in bash is a pain - make.py allows writing everything in python.
+However often writing logic in bash is a pain - pmake allows writing everything in python.
 
-Note: Make.py is not for building CLIs, just a simple way to run orchestration within your project.
+Note: Python Makefile (pmake) is not for building CLIs, just a simple way to run orchestration within your project.
 
 ## Overview
 
 ```python
 
 # Start project within directory (creates Makefile.py)
-make.py init
+pmake init
 
 # Run the first command found in your Makefile.py
-make.py
+pmake
 
 # Run specific command
-make.py <cmd>
+pmake <cmd>
 
 # Passes parameters and overrides any set
-make.py <cmd> PARAM=Value
+pmake <cmd> PARAM=Value
 
 ```
 
@@ -29,7 +29,7 @@ make.py <cmd> PARAM=Value
 ### Content in Makefile.py
 
 ```python
-from make import sh, _, bash, dep
+from pmake import sh, _, bash, dep
 
 # Read from env
 DOCKER_REPO = _('DOCKER_REPO')
@@ -56,13 +56,13 @@ def build_and_push():
 ```bash
 
 # Runs build_images
-make.py
+pmake
 
 # Runs build and push cmds
-make.py build_and_push
+pmake build_and_push
 
 # Runs build and push and overrides push cmds
-make.py build_and_push IMAGE="myimage"
+pmake build_and_push IMAGE="myimage"
 
 ```
 

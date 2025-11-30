@@ -18,9 +18,9 @@ import pytest
 # Add make to path for testing
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from make.core import discover_commands, execute_command, parse_parameters, get_default_command
-from make.env import _, set_env, get_env_dict
-from make.shell import bash, sh
+from pmake.core import discover_commands, execute_command, parse_parameters, get_default_command
+from pmake.env import _, set_env, get_env_dict
+from pmake.shell import bash, sh
 
 
 class TestEnvironmentVariables:

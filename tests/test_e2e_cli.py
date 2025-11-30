@@ -19,8 +19,8 @@ from typer.testing import CliRunner
 # Add make to path for testing
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from make.cli import app, cli_entry_point
-from make.core import discover_commands
+from pmake.cli import app, cli_entry_point
+from pmake.core import discover_commands
 
 
 class TestCLIMainCommand:
@@ -123,7 +123,7 @@ class TestCLISubcommands:
         shutil.rmtree(self.test_dir)
 
     def test_cli_init_command(self):
-        """Test make.py init command"""
+        """Test pmake init command"""
         result = self.runner.invoke(app, ["init"])
 
         assert result.exit_code == 0
@@ -134,11 +134,11 @@ class TestCLISubcommands:
 
         # Verify content is correct
         content = Path("Makefile.py").read_text()
-        assert "from make import sh, bash, _, dep" in content
+        assert "from pmake import sh, bash, _, dep" in content
         assert "def build_images():" in content
 
     def test_cli_init_command_existing_file(self):
-        """Test make.py init when Makefile.py already exists"""
+        """Test pmake init when Makefile.py already exists"""
         # Create existing Makefile.py
         Path("Makefile.py").write_text("# existing file")
 
@@ -148,7 +148,7 @@ class TestCLISubcommands:
         assert "Makefile.py already exists" in result.stdout
 
     def test_cli_list_command(self):
-        """Test make.py list command"""
+        """Test pmake list command"""
         # Copy simple makefile fixture
         fixture_path = Path(__file__).parent / "fixtures" / "simple_makefile.py"
         shutil.copy(fixture_path, "Makefile.py")
@@ -171,15 +171,15 @@ class TestCLISubcommands:
         assert "Dependencies" in result.stdout
 
     def test_cli_list_command_no_makefile(self):
-        """Test make.py list when no Makefile.py exists"""
+        """Test pmake list when no Makefile.py exists"""
         result = self.runner.invoke(app, ["list"])
 
         assert result.exit_code == 1
         assert "Makefile.py not found" in result.stdout
-        assert "make.py init" in result.stdout
+        assert "pmake init" in result.stdout
 
     def test_cli_list_command_with_dependencies(self):
-        """Test make.py list showing dependency relationships"""
+        """Test pmake list showing dependency relationships"""
         # Copy complex makefile fixture
         fixture_path = Path(__file__).parent / "fixtures" / "complex_makefile.py"
         shutil.copy(fixture_path, "Makefile.py")
@@ -239,7 +239,7 @@ class TestCLIErrorHandling:
         # Create Makefile.py with import error
         makefile_content = """
 from nonexistent_module import something
-from make import bash
+from pmake import bash
 
 def test_task():
     bash("echo 'test'")
@@ -255,7 +255,7 @@ def test_task():
         """Test CLI when Makefile.py has no callable functions"""
         # Create Makefile.py with no functions
         makefile_content = """
-from make import bash
+from pmake import bash
 
 # No functions defined
 VARIABLE = "test"
@@ -320,12 +320,12 @@ class TestCLIEntryPoint:
     def test_cli_entry_point_import(self):
         """Test that CLI entry point can be imported"""
         # Should not raise exception
-        from make.cli import cli_entry_point
+        from pmake.cli import cli_entry_point
         assert callable(cli_entry_point)
 
     def test_cli_entry_point_app_structure(self):
         """Test that CLI app has expected structure"""
-        from make.cli import app
+        from pmake.cli import app
 
         # Should have registered commands
         assert len(app.registered_commands) >= 3

@@ -1,4 +1,4 @@
-"""Make.py - Python-based command orchestration using Makefile.py
+"""Python Makefile (pmake) - Python-based command orchestration using Makefile.py
 
 This package provides a Python alternative to Makefiles for project command
 orchestration. It allows writing build/deployment commands in Python instead
@@ -8,7 +8,7 @@ Usage:
     Create a Makefile.py with your commands:
 
     ```python
-    from make import sh, bash, _, dep
+    from pmake import sh, bash, _, dep
 
     # Read from env
     IMAGE = _('IMAGE')
@@ -27,9 +27,9 @@ Usage:
 
     Then run from command line:
     ```bash
-    make.py                    # Run first command
-    make.py build              # Run specific command
-    make.py deploy IMAGE=myapp # Run with parameter override
+    pmake                    # Run first command
+    pmake build              # Run specific command
+    pmake deploy IMAGE=myapp # Run with parameter override
     ```
 """
 

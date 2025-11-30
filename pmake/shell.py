@@ -1,4 +1,4 @@
-"""Shell execution for Make.py
+"""Shell execution for Python Makefile (pmake)
 
 This module provides bash() function and sh proxy object using standard library subprocess.
 Basic UV integration - users manually call bash("uv sync") etc. in their functions.

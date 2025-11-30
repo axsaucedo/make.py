@@ -19,9 +19,9 @@ import pytest
 # Add make to path for testing
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from make.core import discover_commands, execute_command, DependencyError
-from make.env import _
-from make.shell import bash, sh
+from pmake.core import discover_commands, execute_command, DependencyError
+from pmake.env import _
+from pmake.shell import bash, sh
 
 
 class TestCircularDependencies:
@@ -36,7 +36,7 @@ class TestCircularDependencies:
         # Note: The circular_deps.py fixture has intentional syntax issues
         # for testing purposes. We'll create a corrected version for actual testing.
         circular_makefile_content = '''
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Simple circular dependency: A → B → A
 def task_a():
@@ -137,7 +137,7 @@ class TestMissingEnvironmentVariables:
 
         # Create makefile with missing environment variables
         error_makefile_content = '''
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Missing environment variables (no defaults)
 REQUIRED_VAR = _('REQUIRED_VAR_MISSING')  # Will fail if not set
@@ -203,7 +203,7 @@ class TestCommandExecutionFailures:
 
         # Create makefile with failing commands
         failing_makefile_content = '''
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 def failing_command():
     """Task with command that will fail"""
@@ -286,7 +286,7 @@ class TestInvalidDependencyReferences:
 
         # Create makefile with invalid dependency references
         invalid_deps_makefile_content = '''
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 def valid_task():
     """Valid task for testing"""
@@ -325,7 +325,7 @@ def standalone_task():
         """Test handling when some dependencies are valid"""
         # Create a version with only valid dependencies
         valid_makefile_content = '''
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 def valid_task():
     """Valid task for testing"""
@@ -370,7 +370,7 @@ class TestImportErrors:
     def test_missing_make_import(self):
         """Test handling when make import is missing"""
         makefile_content = '''
-# Missing: from make import sh, bash, _, dep
+# Missing: from pmake import sh, bash, _, dep
 
 def task_without_imports():
     """Task that tries to use undefined functions"""
@@ -389,7 +389,7 @@ def task_without_imports():
         """Test handling when Makefile.py imports non-existent modules"""
         makefile_content = '''
 from nonexistent_module import something
-from make import bash
+from pmake import bash
 
 def test_task():
     bash("echo 'test'")
@@ -402,7 +402,7 @@ def test_task():
     def test_syntax_error_in_makefile(self):
         """Test handling when Makefile.py has syntax errors"""
         makefile_content = '''
-from make import bash
+from pmake import bash
 
 def invalid_syntax():
     bash("echo 'unclosed quote)
@@ -417,7 +417,7 @@ def invalid_syntax():
         makefile_content = '''
 import os
 from pathlib import Path
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 def test_imports():
     """Task using various imports"""
@@ -456,7 +456,7 @@ class TestEdgeCases:
     def test_makefile_with_only_variables(self):
         """Test Makefile.py with only variables, no functions"""
         makefile_content = '''
-from make import bash
+from pmake import bash
 
 VARIABLE1 = "value1"
 VARIABLE2 = "value2"
@@ -471,7 +471,7 @@ VARIABLE2 = "value2"
     def test_makefile_with_private_functions(self):
         """Test that private functions (starting with _) are not discovered"""
         makefile_content = '''
-from make import bash
+from pmake import bash
 
 def public_function():
     """Public function"""
@@ -497,7 +497,7 @@ def __dunder_function__():
     def test_makefile_with_classes(self):
         """Test that classes are not treated as commands"""
         makefile_content = '''
-from make import bash
+from pmake import bash
 
 class TestClass:
     def method(self):
@@ -519,7 +519,7 @@ def function():
         # Create a long chain of dependencies
         chain_length = 20
         makefile_content = '''
-from make import bash, dep
+from pmake import bash, dep
 
 def task_0():
     bash("echo 'Task 0'")

@@ -1,7 +1,7 @@
 [project]
-name = "makepy"
+name = "pmake"
 version = "0.1.0"
-description = "Simple command orchestration in python through Makefile.py"
+description = "Python Makefile - Simple command orchestration through Makefile.py"
 readme = "README.md"
 requires-python = ">=3.8"
 dependencies = [
@@ -23,7 +23,7 @@ classifiers = [
 ]
 
 [project.scripts]
-"make.py" = "make.cli:cli_entry_point"
+"pmake" = "pmake.cli:cli_entry_point"
 
 [project.optional-dependencies]
 dev = [
@@ -41,7 +41,7 @@ addopts = [
     "--strict-config",
     "--verbose",
     "-ra",
-    "--cov=make",
+    "--cov=pmake",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-fail-under=85"

@@ -8,7 +8,7 @@ Circular patterns tested:
 3. Self-reference: self_ref → self_ref
 """
 
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Simple circular dependency: A → B → A
 def task_b():

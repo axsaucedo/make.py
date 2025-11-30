@@ -1,4 +1,4 @@
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Read from env
 DOCKER_REPO = _('DOCKER_REPO')

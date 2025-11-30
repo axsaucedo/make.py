@@ -14,7 +14,7 @@ test_coverage → unit_tests
 build → check_env
 """
 
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Environment variables with defaults
 PROJECT = _('PROJECT', 'testapp')

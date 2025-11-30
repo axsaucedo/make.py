@@ -20,7 +20,7 @@ from contextlib import redirect_stdout
 # Add make to path for testing
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from make.core import discover_commands, execute_command
+from pmake.core import discover_commands, execute_command
 
 
 class TestComplexHierarchicalDependencies:

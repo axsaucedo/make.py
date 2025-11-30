@@ -1,6 +1,6 @@
-"""CLI interface for Make.py using Typer
+"""CLI interface for Python Makefile (pmake) using Typer
 
-Provides the main entry point for the make.py command line tool.
+Provides the main entry point for the pmake command line tool.
 """
 
 import sys
@@ -21,7 +21,7 @@ from .core import (
 
 console = Console()
 app = typer.Typer(
-    name="make.py",
+    name="pmake",
     help="Python-based command orchestration using Makefile.py",
     no_args_is_help=False  # Allow running without args to use default command
 )
@@ -34,12 +34,12 @@ def main(
         help="Command name and parameters (PARAM=value)"
     )
 ) -> None:
-    """Main entry point for make.py CLI.
+    """Main entry point for pmake CLI.
 
     Examples:
-        make.py                    # Run first command
-        make.py build_images       # Run specific command
-        make.py build IMAGE=myapp  # Run with parameter override
+        pmake                      # Run first command
+        pmake build_images         # Run specific command
+        pmake build IMAGE=myapp    # Run with parameter override
     """
     try:
         # Discover commands from Makefile.py
@@ -102,7 +102,7 @@ def main(
 @app.command()
 def init() -> None:
     """Initialize a new Makefile.py in the current directory."""
-    makefile_content = '''from make import sh, bash, _, dep
+    makefile_content = '''from pmake import sh, bash, _, dep
 
 # Read from env
 DOCKER_REPO = _('DOCKER_REPO')
@@ -129,9 +129,9 @@ def build_and_push():
             f.write(makefile_content)
         console.print("[green]✓[/green] Created Makefile.py")
         console.print("\n[dim]You can now run:[/dim]")
-        console.print("  make.py                  # Run first command")
-        console.print("  make.py build_images     # Run specific command")
-        console.print("  make.py --help           # Show help")
+        console.print("  pmake                    # Run first command")
+        console.print("  pmake build_images       # Run specific command")
+        console.print("  pmake --help             # Show help")
 
     except FileExistsError:
         console.print("[yellow]Warning:[/yellow] Makefile.py already exists")
@@ -148,7 +148,7 @@ def list() -> None:
 
     except FileNotFoundError:
         console.print("[red]Error:[/red] Makefile.py not found")
-        console.print("Run '[bold]make.py init[/bold]' to create one.")
+        console.print("Run '[bold]pmake init[/bold]' to create one.")
         raise typer.Exit(1)
 
     except ImportError as e:

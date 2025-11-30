@@ -8,7 +8,7 @@ This makefile contains various error scenarios to test error handling:
 5. Shell command errors
 """
 
-from make import sh, bash, _, dep
+from pmake import sh, bash, _, dep
 
 # Missing environment variables (no defaults)
 REQUIRED_VAR = _('REQUIRED_VAR')  # Will fail if not set
