@@ -1,5 +1,5 @@
 [project]
-name = "pmake"
+name = "python-pmake"
 version = "0.1.0"
 description = "Python Makefile - Simple command orchestration through Makefile.py"
 readme = "README.md"
