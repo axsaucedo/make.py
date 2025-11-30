@@ -43,10 +43,12 @@ Usage:
 Key Features:
     - Automatic environment inheritance (virtual environments, PATH, etc.)
     - Environment variables set via _() are available to all shell commands
+    - Real-time command output with captured return values (_tee=True)
     - Simple, lightweight implementation using sh.bake()
 """
 
 import os
+import sys
 import sh as _sh
 
 # Core pmake exports
@@ -56,7 +58,8 @@ from .core import dep
 # Environment inheritance: All shell commands automatically inherit os.environ
 # This ensures virtual environments, PATH, and other environment variables
 # are available to shell commands without complex wrapper classes.
-sh = _sh.bake(_env=os.environ)
+# _tee=True provides both real-time output AND captured return values.
+sh = _sh.bake(_env=os.environ, _out=sys.stdout, _err=sys.stderr, _tee=True)
 
 __version__ = "0.1.0"
 __all__ = ["sh", "_", "dep"]
@@ -73,13 +76,14 @@ def __getattr__(name: str):
     - All current environment variables
     - Variables set via the _() function
 
-    Simple implementation using sh.bake(_env=os.environ).
+    Implementation provides both real-time output AND captured return values
+    using sh.bake(_env=os.environ, _out=sys.stdout, _err=sys.stderr, _tee=True).
     """
     try:
-        return getattr(_sh, name).bake(_env=os.environ)
+        return getattr(_sh, name).bake(_env=os.environ, _out=sys.stdout, _err=sys.stderr, _tee=True)
     except AttributeError:
         # Try to create the command if it exists in PATH
         try:
-            return _sh.Command(name).bake(_env=os.environ)
+            return _sh.Command(name).bake(_env=os.environ, _out=sys.stdout, _err=sys.stderr, _tee=True)
         except Exception:
             raise AttributeError(f"Command '{name}' not found in system PATH")
